@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "347_Docker_Final": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
