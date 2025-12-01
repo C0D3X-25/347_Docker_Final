@@ -1,0 +1,290 @@
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Game</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style_game.css') }}"
+        />
+        <script
+            src="{{ url_for('static', filename='script_game.js') }}"
+            defer
+        ></script>
+    </head>
+    <body>
+        <div id="record"></div>
+        <div id="seconds">Seconds: 0</div>
+        <div id="player">
+            <div id="eyes">
+                <div class="eye" id="left-eye">
+                    <div class="pupil" id="left-pupil"></div>
+                </div>
+                <div class="eye" id="right-eye">
+                    <div class="pupil" id="right-pupil"></div>
+                </div>
+            </div>
+            <div id="mouth">
+                <div id="tongue"></div>
+            </div>
+        </div>
+
+        <style>
+            body {
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: rgb(21, 21, 21);
+                height: 100vh;
+                margin: 0;
+                color: whitesmoke;
+                font-family: "Courier New", Courier, monospace;
+            }
+
+            #record {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+            }
+
+            #seconds {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+            }
+
+            #player {
+                position: absolute;
+                height: 40px;
+                width: 40px;
+                background-color: rgb(180, 180, 180);
+            }
+
+            #eyes {
+                position: absolute;
+                display: flex;
+                justify-content: space-between;
+                height: 8px;
+                width: 100%;
+                top: 10px;
+            }
+
+            .eye {
+                border: 0.5px solid black;
+                background-color: rgb(255, 255, 255);
+                height: 100%;
+                border-radius: 50%;
+                width: 12px;
+            }
+
+            #left-eye {
+                margin-left: 4px;
+            }
+
+            #right-eye {
+                margin-right: 4px;
+            }
+
+            .pupil {
+                position: relative;
+                height: 2px;
+                width: 2px;
+                background-color: black;
+                border-radius: 50%;
+                top: 3px;
+                left: 5px;
+            }
+
+            #mouth {
+                position: absolute;
+                height: 8px;
+                width: 24px;
+                background-color: black;
+                border-radius: 0 0 6px 6px;
+                bottom: 6px;
+                left: 8px;
+            }
+
+            #tongue {
+                position: absolute;
+                height: 4px;
+                width: 12px;
+                background-color: rgb(255, 100, 100);
+                border-radius: 3px 3px 0 0;
+                bottom: 0px;
+                left: 6px;
+            }
+
+            .enemy {
+                top: 0;
+                position: absolute;
+                height: 30px;
+                width: 30px;
+                background-color: rgb(183, 0, 0);
+            }
+        </style>
+
+        <script>
+            const secondsDiv = document.getElementById("seconds");
+            const recordDiv = document.getElementById("record");
+            const player = document.getElementById("player");
+            const style = window.getComputedStyle(player);
+
+            let startPositionLeft = 0;
+            let startPositionTop = 0;
+            let playing = false;
+            let enemyTimeout = 1000;
+            let enemySpeed = 30;
+            let playerSpeed = 20;
+            let seconds = 0;
+            let timer = 0;
+
+            class Enemy {
+                constructor(speed) {
+                    this.element = document.createElement("div");
+                    this.element.classList.add("enemy");
+                    this.speed = speed;
+                    this.init();
+                }
+
+                init() {
+                    const left = Math.random() * (window.innerWidth - 20);
+                    this.element.style.left = left + "px";
+                    this.element.style.top = "-40px";
+                    document.body.appendChild(this.element);
+                    this.moveDown();
+                }
+
+                moveDown() {
+                    const interval = setInterval(() => {
+                        this.element.style.top =
+                            parseInt(this.element.style.top) + 10 + "px";
+
+                        if (
+                            parseInt(this.element.style.top) >
+                                window.innerHeight ||
+                            !playing
+                        ) {
+                            this.destroy();
+                            clearInterval(interval);
+                        } else {
+                            this.checkCollision();
+                        }
+                    }, this.speed);
+                }
+
+                checkCollision() {
+                    const enemyRect = this.element.getBoundingClientRect();
+                    const playerRect = player.getBoundingClientRect();
+
+                    if (
+                        enemyRect.left < playerRect.right &&
+                        enemyRect.right > playerRect.left &&
+                        enemyRect.top < playerRect.bottom &&
+                        enemyRect.bottom > playerRect.top
+                    ) {
+                        this.destroy();
+                        endGame();
+                    }
+                }
+
+                destroy() {
+                    this.element.remove();
+                }
+            }
+
+            const setBestScore = (score) =>
+                localStorage.setItem("bestScore", score);
+            const getBestScore = () => localStorage.getItem("bestScore") || 0;
+
+            const startGame = () => {
+                recordDiv.textContent = "Best Score: " + getBestScore();
+
+                const boundingClientRect = player.getBoundingClientRect();
+                startPositionLeft = boundingClientRect.left;
+                startPositionTop = boundingClientRect.top;
+
+                startTimer();
+                summonEnemy();
+            };
+
+            const endGame = () => {
+                playing = false;
+                clearInterval(timer);
+
+                if (seconds > getBestScore()) {
+                    setBestScore(seconds);
+                    recordDiv.textContent = "Best Score: " + getBestScore();
+                }
+
+                seconds = 0;
+                enemyTimeout = 1000;
+                enemySpeed = 30;
+                playerSpeed = 20;
+
+                player.style.left = startPositionLeft + "px";
+                player.style.top = startPositionTop + "px";
+            };
+
+            const startTimer = () => {
+                timer = setInterval(() => {
+                    if (playing)
+                        secondsDiv.textContent = "Seconds: " + ++seconds;
+                    enemyTimeout = Math.max(50, enemyTimeout - 20);
+                }, 1000);
+            };
+
+            const summonEnemy = () => {
+                new Enemy(enemySpeed);
+
+                enemySpeed = Math.max(3, enemySpeed - 0.2);
+                playerSpeed = Math.min(40, playerSpeed + 1);
+                console.log(
+                    `Enemy speed: ${enemySpeed}, Enemy timeout: ${enemyTimeout}, Player speed: ${playerSpeed}`
+                );
+
+                setTimeout(
+                    () => (playing ? summonEnemy() : null),
+                    enemyTimeout
+                );
+            };
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === " ") {
+                    startGame();
+                    playing = true;
+                }
+                if (!playing) return;
+
+                const left = parseInt(style.left);
+                const top = parseInt(style.top);
+
+                switch (event.key) {
+                    case "ArrowUp":
+                        player.style.top =
+                            Math.max(0, top - playerSpeed) + "px";
+                        break;
+                    case "ArrowDown":
+                        player.style.top =
+                            Math.min(
+                                window.innerHeight - 25,
+                                top + playerSpeed
+                            ) + "px";
+                        break;
+                    case "ArrowLeft":
+                        player.style.left =
+                            Math.max(0, left - playerSpeed) + "px";
+                        break;
+                    case "ArrowRight":
+                        player.style.left =
+                            Math.min(
+                                window.innerWidth - 40,
+                                left + playerSpeed
+                            ) + "px";
+                        break;
+                }
+            });
+        </script>
+    </body>
+</html>
