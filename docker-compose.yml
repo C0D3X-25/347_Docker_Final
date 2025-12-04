@@ -1,0 +1,56 @@
+services:
+  db_dev:
+    image: mysql:latest
+    container_name: db_dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root_dev
+      MYSQL_DATABASE: floppy_db_dev
+      MYSQL_USER: dev_user
+      MYSQL_PASSWORD: dev_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_dev_data:/var/lib/mysql
+      - ./backEnd/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  db_prod:
+    image: mysql:latest
+    container_name: db_prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_prod_change_me}
+      MYSQL_DATABASE: floppy_db_prod
+      MYSQL_USER: prod_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-prod_password_change_me}
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_prod_data:/var/lib/mysql
+      - ./backEnd/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dotnet_app
+    depends_on:
+      - db_dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db_dev;Database=floppy_db_dev;User=dev_user;Password=dev_password;
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  db_dev_data:
+  db_prod_data:
+
+networks:
+  app_network:
+    driver: bridge
