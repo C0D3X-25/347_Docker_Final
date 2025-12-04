@@ -12,24 +12,38 @@ Defines and runs the multi-container application.
 
 ### Services
 
-| Service | Image | Purpose |
-|---------|-------|---------|
-| backend | Custom (Dockerfile) | C# API |
-| mysql-dev | mysql:8.0 | Dev database with sample data |
-| mysql-prod | mysql:8.0 | Production database |
-| frontend | Custom (Dockerfile) | Python game (coming soon) |
+| Service | Image | Purpose | Host Port |
+|---------|-------|---------|-----------|
+| backend-dev | Custom (Dockerfile) | C# API (dev) | 8081 |
+| backend-prod | Custom (Dockerfile) | C# API (prod) | 8080 |
+| mysql-dev | mysql:8.0 | Dev database with sample data | 3307 |
+| mysql-prod | mysql:8.0 | Production database | 3306 |
+| frontend | Custom (Dockerfile) | Python game (coming soon) | 3000 |
 
 ### Profiles
 
 Profiles allow running different configurations without modifying the compose file.
 
-- `dev` - Starts mysql-dev which includes sample test data from `dev-seed.sql`
-- `prod` - Starts mysql-prod with empty tables (schema only from `init.sql`)
+- `dev` - Starts backend-dev + mysql-dev (includes sample test data from `dev-seed.sql`)
+- `prod` - Starts backend-prod + mysql-prod (empty tables, schema only from `init.sql`)
 
 **Why use profiles?**
 - Avoids starting unnecessary containers
 - Keeps dev and prod data completely separate
 - Allows different initialization scripts per environment
+- Each profile has its own backend pointing to the correct database
+
+### Port Mapping
+
+| Environment | Backend (host:container) | MySQL (host:container) |
+|-------------|--------------------------|------------------------|
+| Dev | 8081:8080 | 3307:3306 |
+| Prod | 8080:8080 | 3306:3306 |
+
+**Why different host ports?**
+- Allows running both environments simultaneously
+- No port conflicts between dev and prod
+- Internal container ports remain standard (8080, 3306)
 
 ### Volumes
 
@@ -50,17 +64,25 @@ All services share `app-net` bridge network.
 **Why a custom network?**
 - Containers can communicate using service names (e.g., `mysql-dev` instead of IP addresses)
 - Isolated from other Docker networks on the host
-- Frontend can call `http://backend:8080` directly
+- Frontend can call `http://backend-dev:8080` or `http://backend-prod:8080` directly
 
 ### Environment Variables
 
 Backend reads database connection info from environment:
 
 ```yaml
-DB_HOST: mysql-dev    # Service name, resolved by Docker DNS
-DB_PORT: 3306         # MySQL default port
-DB_NAME: db_347       # Database name created by MySQL init
-DB_USER: appuser      # Non-root user for application
+# Dev environment
+DB_HOST: mysql-dev
+DB_PORT: 3306         # Internal port (not host port)
+DB_NAME: db_347
+DB_USER: appuser
+DB_PASSWORD: apppassword
+
+# Prod environment
+DB_HOST: mysql-prod
+DB_PORT: 3306         # Internal port (not host port)
+DB_NAME: db_347
+DB_USER: appuser
 DB_PASSWORD: apppassword
 ```
 
@@ -68,6 +90,8 @@ DB_PASSWORD: apppassword
 - No hardcoded credentials in code
 - Easy to change between environments
 - Follows 12-factor app principles
+
+**Important:** `DB_PORT` is always 3306 (internal container port), not the host port (3307 for dev).
 
 ### Health Checks
 
@@ -191,7 +215,11 @@ Default command when container starts. Can be overridden at runtime.
 
 ### Communication with Backend
 
-The frontend receives `BACKEND_URL=http://backend:8080` from docker-compose. It uses this to make HTTP requests to the C# API for:
+The frontend receives `BACKEND_URL` from docker-compose:
+- Dev: `http://backend-dev:8080`
+- Prod: `http://backend-prod:8080`
+
+It uses this to make HTTP requests to the C# API for:
 - User registration and login
 - Saving scores after game over
 - Fetching leaderboard data

@@ -10,21 +10,22 @@ A Flappy Bird clone using Python for the game and MySQL for storing player score
 ## Architecture
 
 ### Containers
-| Container | Description | Port |
-|-----------|-------------|------|
+| Container | Description | Host Port |
+|-----------|-------------|-----------|
 | frontend | Python Flappy Bird game | 3000 |
-| backend | C# ASP.NET Core API | 8080 |
-| mysql-dev | MySQL database (dev) | 3306 |
-| mysql-prod | MySQL database (prod) | 3307 |
+| backend-dev | C# ASP.NET Core API (dev) | 8081 |
+| backend-prod | C# ASP.NET Core API (prod) | 8080 |
+| mysql-dev | MySQL database (dev) | 3307 |
+| mysql-prod | MySQL database (prod) | 3306 |
 
 ### Volumes
 | Volume | Description |
 |--------|-------------|
-| mysql-dev-data | Persistent dev database storage (contain sample data for testing) |
+| mysql-dev-data | Persistent dev database storage (contains sample data for testing) |
 | mysql-prod-data | Persistent prod database storage |
 
 ### Network
-All containers communicate via `app-net` bridge network.
+All containers communicate via `app-net` bridge network using internal port 3306 for MySQL and 8080 for backend.
 
 ## Quick Start
 
@@ -32,15 +33,18 @@ All containers communicate via `app-net` bridge network.
 ```sh
 docker compose --profile dev up --build
 ```
+API available at: `http://localhost:8081`
 
 ### Production
 ```sh
 docker compose --profile prod up --build
 ```
+API available at: `http://localhost:8080`
 
 ### Stop
 ```sh
 docker compose --profile dev down
+docker compose --profile prod down
 ```
 
 ### Reset database
