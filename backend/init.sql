@@ -3,7 +3,7 @@ USE db_347;
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create scores table
 CREATE TABLE IF NOT EXISTS scores (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     fk_user INT NOT NULL,
     score INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -19,4 +19,4 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 -- Create index on fk_user for better query performance
-CREATE INDEX IF NOT EXISTS idx_scores_fk_user ON scores(fk_user);
+CREATE INDEX idx_scores_fk_user ON scores(fk_user);

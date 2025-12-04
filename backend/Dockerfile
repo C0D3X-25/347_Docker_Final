@@ -1,9 +1,10 @@
-## See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+## See https://aka.ms/customizecontainer to learn how to customize your debug container
 #
 ## This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/runtime:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
+EXPOSE 8080
 #
 #
 ## This stage is used to build the service project
@@ -13,7 +14,6 @@ WORKDIR /src
 COPY ["347_Docker_Final.csproj", "."]
 RUN dotnet restore "./347_Docker_Final.csproj"
 COPY . .
-WORKDIR "/src/."
 RUN dotnet build "./347_Docker_Final.csproj" -c $BUILD_CONFIGURATION -o /app/build
 #
 ## This stage is used to publish the service project to be copied to the final stage

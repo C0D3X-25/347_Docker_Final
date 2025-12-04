@@ -1,33 +1,39 @@
-version: "3.9"
+# Docker Compose configuration for the Flappy Bird clone application.
+# Defines frontend (Python), backend (C# API), and MySQL databases (dev/prod).
 
 name: app-stack
 
+# Named volumes for persistent MySQL data
 volumes:
   mysql-prod-data:
   mysql-dev-data:
 
+# Shared network for inter-container communication
 networks:
   app-net:
     driver: bridge
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: frontend:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - BACKEND_URL=http://backend:8080
-    depends_on:
-      - backend
-    networks:
-      - app-net
 
+  # # Python frontend application (Flappy Bird game)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   image: frontend:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - BACKEND_URL=http://backend:8080
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - app-net
+
+  # C# ASP.NET Core backend API for user registration and login
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     image: backend:latest
     ports:
@@ -40,13 +46,14 @@ services:
       - DB_USER=appuser
       - DB_PASSWORD=apppassword
     depends_on:
-      - mysql-dev
+      mysql-dev:
+        condition: service_healthy
     networks:
       - app-net
 
+  # MySQL database for production environment
   mysql-prod:
     image: mysql:8.0
-    command: ["--default-authentication-plugin=mysql_native_password"]
     environment:
       - MYSQL_DATABASE=db_347
       - MYSQL_USER=appuser
@@ -59,12 +66,17 @@ services:
       - ./backend/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     profiles:
       - prod
 
+  # MySQL database for development environment (includes sample data)
   mysql-dev:
     image: mysql:8.0
-    command: ["--default-authentication-plugin=mysql_native_password"]
     environment:
       - MYSQL_DATABASE=db_347
       - MYSQL_USER=appuser
@@ -78,5 +90,10 @@ services:
       - ./backend/dev-seed.sql:/docker-entrypoint-initdb.d/10-dev-seed.sql:ro
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     profiles:
       - dev
