@@ -1,56 +1,79 @@
+version: "3.9"
+
+name: app-stack
+
+volumes:
+  mysql-prod-data:
+  mysql-dev-data:
+
+networks:
+  app-net:
+    driver: bridge
+
 services:
-  db_dev:
-    image: mysql:latest
-    container_name: db_dev
-    environment:
-      MYSQL_ROOT_PASSWORD: root_dev
-      MYSQL_DATABASE: floppy_db_dev
-      MYSQL_USER: dev_user
-      MYSQL_PASSWORD: dev_password
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend:latest
     ports:
-      - "3307:3306"
-    volumes:
-      - db_dev_data:/var/lib/mysql
-      - ./backEnd/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - app_network
-    restart: unless-stopped
-
-  db_prod:
-    image: mysql:latest
-    container_name: db_prod
+      - "3000:3000"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_prod_change_me}
-      MYSQL_DATABASE: floppy_db_prod
-      MYSQL_USER: prod_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-prod_password_change_me}
-    ports:
-      - "3308:3306"
-    volumes:
-      - db_prod_data:/var/lib/mysql
-      - ./backEnd/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
     networks:
-      - app_network
-    restart: always
+      - app-net
 
-  app:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: dotnet_app
-    depends_on:
-      - db_dev
+    image: backend:latest
+    ports:
+      - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db_dev;Database=floppy_db_dev;User=dev_user;Password=dev_password;
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - DB_HOST=mysql-dev
+      - DB_PORT=3306
+      - DB_NAME=appdb
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+    depends_on:
+      - mysql-dev
     networks:
-      - app_network
-    restart: unless-stopped
+      - app-net
 
-volumes:
-  db_dev_data:
-  db_prod_data:
+  mysql-prod:
+    image: mysql:8.0
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    environment:
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-prod-data:/var/lib/mysql
+    networks:
+      - app-net
+    profiles:
+      - prod
 
-networks:
-  app_network:
-    driver: bridge
+  mysql-dev:
+    image: mysql:8.0
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    environment:
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-dev-data:/var/lib/mysql
+    networks:
+      - app-net
+    profiles:
+      - dev
