@@ -134,7 +134,6 @@ def post_score():
     data = response[1]
 
     if status_code == 201:
-        print(True)
         return "", 201
 
     if data:
@@ -148,7 +147,17 @@ def post_score():
 @app.route("/leaderboard")
 def leaderboard():
     scores = get_scores()
-    return render_template("leaderboard.html", scores=scores)
+    username = session.get("username")
+    place: int | None = None
+    score: int | None = None
+
+    if username and scores:
+        place, score = get_place_and_score(username, scores)
+
+    print(username, place, score)
+    return render_template(
+        "leaderboard.html", scores=scores, username=username, place=place, score=score
+    )
 
 
 @app.route("/forgot")
@@ -172,6 +181,20 @@ def logout_route():
     logout()
     return redirect(url_for("login_get"))
 
+
+def get_place_and_score(username: str, scores: list[dict[str, Union[str, int]]]) -> tuple[Union[int, None], Union[int, None]]:
+    place: int | None = None
+    score: int | None = None
+
+    for index, score_entry in enumerate(scores):
+        if score_entry.get("name") == username:
+            place = index + 1
+            data_score = score_entry.get("bestScore")
+            if type(data_score) is int:
+                score = data_score
+            break
+
+    return place, score
 
 def login(username: str, password: str) -> tuple[int, Union[dict[str, str], None]]:
     data: dict[str, str] | None = None

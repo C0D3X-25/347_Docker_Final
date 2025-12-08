@@ -13,16 +13,32 @@
         <div id="water"></div>
         <main class="leaderboard-page">
             <section class="leaderboard-card">
-                <header>
+                <header class="leaderboard-header">
                     <div class="logo" aria-hidden="true">🐳</div>
-                    <div>
+                    <div class="leaderboard-title">
                         <p class="eyebrow">Top joueurs</p>
                         <h1>Leaderboard</h1>
+                    </div>
+                    <div class="player-highlights">
+                        {% if place %}
+                        <div class="highlight">
+                            <span class="label">Place</span>
+                            <span class="value">#{{ place }}</span>
+                        </div>
+                        {% endif %} {% if score %}
+                        <div class="highlight">
+                            <span class="label">Score</span>
+                            <span class="value">{{ score }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </header>
 
                 <div class="leaderboard-list" role="list">
-                    <article class="leaderboard-item top-1" role="listitem">
+                    <article
+                        class="leaderboard-item top-1{% if username and scores[0].name == username %} is-player{% endif %}"
+                        role="listitem"
+                    >
                         <span class="rank">1</span>
                         <div class="player">
                             <p class="name">{{ scores[0].name }}</p>
@@ -33,7 +49,10 @@
                         <span class="score">{{ scores[0].bestScore }}</span>
                     </article>
 
-                    <article class="leaderboard-item top-2" role="listitem">
+                    <article
+                        class="leaderboard-item top-2{% if username and scores[1].name == username %} is-player{% endif %}"
+                        role="listitem"
+                    >
                         <span class="rank">2</span>
                         <div class="player">
                             <p class="name">{{ scores[1].name }}</p>
@@ -43,8 +62,11 @@
                         </div>
                         <span class="score">{{ scores[1].bestScore }}</span>
                     </article>
-                    
-                    <article class="leaderboard-item top-3" role="listitem">
+
+                    <article
+                        class="leaderboard-item top-3{% if username and scores[2].name == username %} is-player{% endif %}"
+                        role="listitem"
+                    >
                         <span class="rank">3</span>
                         <div class="player">
                             <p class="name">{{ scores[2].name }}</p>
@@ -56,7 +78,10 @@
                     </article>
 
                     {% for score in scores[3:] %}
-                    <article class="leaderboard-item" role="listitem">
+                    <article
+                        class="leaderboard-item{% if username and score.name == username %} is-player{% endif %}"
+                        role="listitem"
+                    >
                         <span class="rank">{{ loop.index + 3 }}</span>
                         <div class="player">
                             <p class="name">{{ score.name }}</p>
@@ -67,11 +92,39 @@
                     {% endfor %}
                 </div>
 
-                <a class="back-button" href="/game">
-                    <span class="back-icon" aria-hidden="true">&larr;</span>
-                    Retour
-                </a>
+                <div class="leaderboard-actions">
+                    <a class="back-button" href="/game">
+                        <span class="back-icon" aria-hidden="true">&larr;</span>
+                        Retour
+                    </a>
+
+                    {% if username and place %}
+                    <button
+                        class="scroll-to-player"
+                        type="button"
+                        onclick="scrollToPlayer()"
+                    >
+                        Go to my position
+                    </button>
+                    {% endif %}
+                </div>
             </section>
         </main>
+        <script>
+            const leaderboardList = document.querySelector(".leaderboard-list");
+            const scrollButton = document.querySelector(".scroll-to-player");
+
+            function scrollToPlayer(
+                options = { behavior: "smooth", block: "center" }
+            ) {
+                if (!leaderboardList) return;
+                const playerItem = leaderboardList.querySelector(".is-player");
+                if (playerItem) {
+                    playerItem.scrollIntoView(options);
+                }
+            }
+
+            scrollToPlayer({ behavior: "auto", block: "center" });
+        </script>
     </body>
 </html>

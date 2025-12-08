@@ -36,7 +36,6 @@ body {
 }
 
 .back-button {
-    align-self: center;
     background: rgba(9, 21, 38, 0.75);
     color: #f3f7ff;
     border-radius: 999px;
@@ -49,7 +48,6 @@ body {
     box-shadow: 0 16px 40px rgba(0, 8, 20, 0.65);
     font-weight: 600;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    margin-top: 8px;
 }
 
 .back-button:hover {
@@ -74,10 +72,57 @@ body {
     gap: 24px;
 }
 
-.leaderboard-card header {
+.leaderboard-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
+    justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.leaderboard-actions .back-button {
+    margin-top: 0;
+}
+
+.leaderboard-header {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.leaderboard-title {
+    flex: 1;
+}
+
+.player-highlights {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    text-align: right;
+    min-width: 220px;
+    justify-content: flex-end;
+}
+
+.highlight {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.highlight .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+}
+
+.highlight .value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fefefe;
 }
 
 .leaderboard-card .logo {
@@ -133,6 +178,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     gap: 16px;
 }
+
 
 .leaderboard-item.top-1 {
     position: sticky;
@@ -203,9 +249,68 @@ body {
     color: var(--primary);
 }
 
+.scroll-to-player {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(36, 150, 237, 0.2);
+    color: #f3f7ff;
+    padding: 12px 22px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.scroll-to-player:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(36, 150, 237, 0.3);
+    background: rgba(36, 150, 237, 0.35);
+}
+
+.leaderboard-item.is-player {
+    border-color: rgba(95, 212, 255, 0.85);
+    box-shadow: 0 0 35px rgba(36, 150, 237, 0.35);
+    background: linear-gradient(120deg, rgba(36, 150, 237, 0.25), rgba(6, 16, 32, 0.9));
+}
+
+.leaderboard-item.is-player .name,
+.leaderboard-item.is-player .score {
+    color: #5fd4ff;
+}
+
 @media (max-width: 520px) {
     .leaderboard-card {
         padding: 28px 22px;
+    }
+
+    .leaderboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .player-highlights {
+        width: 100%;
+        text-align: left;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .highlight {
+        width: 100%;
+    }
+
+    .leaderboard-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .leaderboard-actions .scroll-to-player,
+    .leaderboard-actions .back-button {
+        width: 100%;
+        justify-content: center;
     }
 
     .leaderboard-item {
