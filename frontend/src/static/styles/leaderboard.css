@@ -138,9 +138,10 @@ body {
     position: sticky;
     top: 0;
     z-index: 5;
-    background: linear-gradient(120deg, rgba(241, 196, 15, 0.3), rgba(10, 26, 48, 0.9));
-    border-color: rgba(241, 196, 15, 0.45);
-    box-shadow: 0 10px 35px rgba(241, 196, 15, 0.3);
+    background: linear-gradient(120deg, rgba(241, 196, 15, 0.7), rgba(14, 22, 38, 0.95));
+    border-color: rgba(241, 196, 15, 0.65);
+    box-shadow: 0 14px 45px rgba(241, 196, 15, 0.35);
+    backdrop-filter: blur(6px);
 }
 
 .leaderboard-item.top-2 {

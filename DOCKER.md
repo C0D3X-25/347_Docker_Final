@@ -170,7 +170,7 @@ Copies only the published DLLs into the small runtime image. Final image is ~200
 
 ---
 
-## frontend/Dockerfile (Coming Soon)
+## frontend/Dockerfile
 
 Will be a Python-based container for the Flappy Bird game.
 
@@ -203,13 +203,13 @@ Copies all source files. This layer rebuilds on any code change, but dependency 
 
 ```dockerfile
 # Expose port
-EXPOSE 3000
+EXPOSE 5000
 ```
 Documents which port the container listens on. Doesn't actually publish the port (that's done in compose).
 
 ```dockerfile
 # Run the game
-CMD ["python", "main.py"]
+CMD ["python", "src/main.py"]
 ```
 Default command when container starts. Can be overridden at runtime.
 

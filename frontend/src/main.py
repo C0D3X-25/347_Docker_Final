@@ -5,6 +5,8 @@ import requests
 from config import API_BASE_URL
 from typing import Any, Union
 
+IS_DEV = "prod" not in API_BASE_URL
+
 app = Flask(__name__)
 app.secret_key = "1414e499f8eb806d6be668779f05ca31c41d4ca6298ffeb7d29cc993a32756ff"
 
@@ -249,4 +251,7 @@ def logout() -> None:
     session.pop("username", None)
 
 
-app.run(host="0.0.0.0", debug=True)
+if __name__ == "__main__":
+    print(f"Starting frontend with backend at {API_BASE_URL}")
+    port = 5000 if IS_DEV else 5001
+    app.run(host="0.0.0.0", debug=IS_DEV, port=port)
