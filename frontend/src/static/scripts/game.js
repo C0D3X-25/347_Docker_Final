@@ -9,6 +9,17 @@ const oxygenBar = document.getElementById("oxygen-bar");
 const container = new Image();
 container.src = "/static/assets/container.png";
 
+const deadByOxygenMsgs = [
+    "Tu manques pas d'air !",
+    "Respire un bon coup !",
+    "L'oxygène, c'est la vie !",
+];
+const deadByCollisionMsgs = [
+    "Prends pas la grosse tête !",
+    "Tape pas contre le mur gros !",
+    "Améliore ton doigté !",
+];
+
 const playerSpeed = 20;
 const containerRows = [];
 const maxOxygen = 100;
@@ -87,7 +98,7 @@ class ContainerRow {
                 playerRect.top < containerRect.bottom &&
                 playerRect.bottom > containerRect.top
             ) {
-                endGame();
+                endGame("collision");
             }
         }
 
@@ -192,21 +203,21 @@ const startOxygenDrain = () => {
             oxygen -= 10;
             oxygenBar.value = oxygen;
             if (oxygen <= 0) {
-                endGame();
+                endGame("oxygen");
             }
         }
     }, 1000);
 };
 
-const endGame = () => {
+const endGame = (reason) => {
     playing = false;
     clearInterval(spawner);
     clearInterval(oxygenInterval);
 
     oxygen = 100;
     oxygenBar.value = oxygen;
-    pressSpace.style.display = "block";
 
+    updateMainMessage(score, reason);
     postScore(score);
     resetScore();
 
@@ -217,6 +228,26 @@ const endGame = () => {
 
     player.style.left = startPositionLeft + "px";
     player.style.top = startPositionTop + "px";
+};
+
+const updateMainMessage = (score, reason) => {
+    let msg = "";
+
+    if (reason === "oxygen") {
+        msg =
+            deadByOxygenMsgs[
+                Math.floor(Math.random() * deadByOxygenMsgs.length)
+            ];
+    } else if (reason === "collision") {
+        msg =
+            deadByCollisionMsgs[
+                Math.floor(Math.random() * deadByCollisionMsgs.length)
+            ];
+    }
+
+    pressSpace.innerHTML =
+        msg + "<br>" + "Score: " + score + "<br><br>Press start to respace";
+    pressSpace.style.display = "block";
 };
 
 const toggleMenu = () => {
