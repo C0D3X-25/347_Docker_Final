@@ -11,9 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="FrontEnd\**" />
-    <EmbeddedResource Remove="FrontEnd\**" />
-    <None Remove="FrontEnd\**" />
+    <Content Include=".vscode\settings.json" />
   </ItemGroup>
 
   <ItemGroup>

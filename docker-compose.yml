@@ -15,8 +15,25 @@ networks:
 
 services:
 
-  # Python frontend application (Flappy Bird game)
-  frontend:
+  # Python frontend application (Flappy Bird game) - dev
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend:latest
+    ports:
+      - "5001:5000"
+    environment:
+      - BACKEND_URL=http://backend-dev:8080
+    depends_on:
+      - backend-dev
+    networks:
+      - app-net
+    profiles:
+      - dev
+
+  # Python frontend application (Flappy Bird game) - prod
+  frontend-prod:
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -24,11 +41,13 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - BACKEND_URL=http://backend:8080
+      - BACKEND_URL=http://backend-prod:8080
     depends_on:
-      - backend
+      - backend-prod
     networks:
       - app-net
+    profiles:
+      - prod
 
   # C# ASP.NET Core backend API for user registration and login (dev)
   backend-dev:
