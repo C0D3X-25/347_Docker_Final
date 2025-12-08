@@ -20,9 +20,20 @@ const deadByCollisionMsgs = [
     "Améliore ton doigté !",
 ];
 
-const playerSpeed = 20;
+const playerSpeed = 3;
 const containerRows = [];
 const maxOxygen = 100;
+const movementKeys = new Set([
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "w",
+    "a",
+    "s",
+    "d",
+]);
+const pressedKeys = new Set();
 
 let startPositionLeft = 0;
 let startPositionTop = 0;
@@ -31,6 +42,7 @@ let score = 0;
 let oxygen = maxOxygen;
 let spawner = null;
 let oxygenInterval = null;
+let movementFrame = null;
 
 class ContainerRow {
     htmlElement = null;
@@ -186,6 +198,7 @@ const startGame = () => {
 
     startSummoningContainers();
     startOxygenDrain();
+    ensureMovementLoop();
 };
 
 const startSummoningContainers = () => {
@@ -259,6 +272,7 @@ const toggleMenu = () => {
     } else {
         menuContainer.style.display = "flex";
     }
+    ensureMovementLoop();
 };
 
 const postScore = async (score) => {
@@ -283,46 +297,88 @@ const logOut = () => {
     window.location.href = "/logout";
 };
 
-document.addEventListener("keydown", (event) => {
-    if (event.key === " ") {
-        startGame();
+const ensureMovementLoop = () => {
+    if (!movementFrame && playing && pressedKeys.size > 0) {
+        movementFrame = requestAnimationFrame(stepMovement);
     }
+};
 
-    if (event.key === "Escape") {
-        toggleMenu();
+const normalizeKey = (key) => (key.length === 1 ? key.toLowerCase() : key);
+
+const stepMovement = () => {
+    if (!playing || pressedKeys.size === 0) {
+        movementFrame = null;
+        return;
     }
-
-    if (!playing) return;
 
     const parentRect = player.offsetParent.getBoundingClientRect();
-
     const playerRect = player.getBoundingClientRect();
-    const left = playerRect.left - parentRect.left;
-    const top = playerRect.top - parentRect.top;
+    const initialLeft = playerRect.left - parentRect.left;
+    const initialTop = playerRect.top - parentRect.top;
     const playerW = playerRect.width;
     const playerH = playerRect.height;
 
     const maxTop = Math.max(0, parentRect.height - playerH - 20);
     const maxLeft = Math.max(0, parentRect.width - playerW);
 
-    switch (event.key) {
-        case "ArrowUp":
-        case "w":
-            player.style.top = Math.max(-40, top - playerSpeed) + "px";
-            updateOxygenBar();
-            break;
-        case "ArrowDown":
-        case "s":
-            player.style.top = Math.min(maxTop, top + playerSpeed) + "px";
-            updateOxygenBar();
-            break;
-        case "ArrowLeft":
-        case "a":
-            player.style.left = Math.max(0, left - playerSpeed) + "px";
-            break;
-        case "ArrowRight":
-        case "d":
-            player.style.left = Math.min(maxLeft, left + playerSpeed) + "px";
-            break;
+    let newTop = initialTop;
+    let newLeft = initialLeft;
+    let movedVertically = false;
+
+    const upPressed = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
+    const downPressed = pressedKeys.has("ArrowDown") || pressedKeys.has("s");
+    const leftPressed = pressedKeys.has("ArrowLeft") || pressedKeys.has("a");
+    const rightPressed = pressedKeys.has("ArrowRight") || pressedKeys.has("d");
+
+    if (upPressed && !downPressed) {
+        newTop = Math.max(-40, initialTop - playerSpeed);
+        movedVertically = true;
+    } else if (downPressed && !upPressed) {
+        newTop = Math.min(maxTop, initialTop + playerSpeed);
+        movedVertically = true;
     }
+
+    if (leftPressed && !rightPressed) {
+        newLeft = Math.max(0, initialLeft - playerSpeed);
+    } else if (rightPressed && !leftPressed) {
+        newLeft = Math.min(maxLeft, initialLeft + playerSpeed);
+    }
+
+    if (newTop !== initialTop) {
+        player.style.top = newTop + "px";
+    }
+    if (newLeft !== initialLeft) {
+        player.style.left = newLeft + "px";
+    }
+    if (movedVertically) {
+        updateOxygenBar();
+    }
+
+    movementFrame = requestAnimationFrame(stepMovement);
+};
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === " ") {
+        event.preventDefault();
+        startGame();
+        return;
+    }
+
+    if (event.key === "Escape") {
+        toggleMenu();
+        return;
+    }
+
+    const normalizedKey = normalizeKey(event.key);
+    if (!movementKeys.has(normalizedKey)) return;
+
+    event.preventDefault();
+    pressedKeys.add(normalizedKey);
+    ensureMovementLoop();
+});
+
+document.addEventListener("keyup", (event) => {
+    const normalizedKey = normalizeKey(event.key);
+    if (!movementKeys.has(normalizedKey)) return;
+    pressedKeys.delete(normalizedKey);
 });

@@ -179,8 +179,10 @@ def login(username: str, password: str) -> tuple[int, Union[dict[str, str], None
     payload = {"name": username, "password": password}
     response = requests.post(f"{API_BASE_URL}/login", json=payload)
 
-    if response.json():
+    try:
         data = response.json()
+    except ValueError:
+        data = None
 
     return response.status_code, data
 
@@ -191,8 +193,10 @@ def register(username: str, password: str) -> tuple[int, Union[dict[str, str], N
     payload = {"name": username, "password": password}
     response = requests.post(f"{API_BASE_URL}/users", json=payload)
 
-    if response.json():
+    try:
         data = response.json()
+    except ValueError:
+        data = None
 
     return response.status_code, data
 
@@ -215,8 +219,10 @@ def get_score(
     data: dict[str, Union[str, list[int], int]] | None = None
     response = requests.get(f"{API_BASE_URL}/scores/{username}")
 
-    if response.json():
+    try:
         data = response.json()
+    except ValueError:
+        data = None
 
     return response.status_code, data
 
@@ -225,8 +231,10 @@ def get_scores() -> list[dict[str, Union[str, int]]] | None:
     data: list[dict[str, Union[str, int]]] | None = None
     response = requests.get(f"{API_BASE_URL}/scores")
 
-    if response.json():
+    try:
         data = response.json()
+    except ValueError:
+        data = None
 
     return data
 
@@ -239,8 +247,10 @@ def set_score(
     payload: dict[str, Union[str, int]] = {"name": username, "score": score}
     response = requests.post(f"{API_BASE_URL}/scores", json=payload)
 
-    if response.json():
+    try:
         data = response.json()
+    except ValueError:
+        data = None
 
     return response.status_code, data
 
