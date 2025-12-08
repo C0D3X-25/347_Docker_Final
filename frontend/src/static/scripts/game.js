@@ -20,7 +20,7 @@ const deadByCollisionMsgs = [
     "Améliore ton doigté !",
 ];
 
-const playerSpeed = 3;
+const playerSpeed = 4;
 const containerRows = [];
 const maxOxygen = 100;
 const movementKeys = new Set([
@@ -35,14 +35,15 @@ const movementKeys = new Set([
 ]);
 const pressedKeys = new Set();
 
-let startPositionLeft = 0;
-let startPositionTop = 0;
+let startPositionLeft = player.offsetLeft;
+let startPositionTop = player.offsetTop;
 let playing = false;
 let score = 0;
 let oxygen = maxOxygen;
 let spawner = null;
 let oxygenInterval = null;
 let movementFrame = null;
+let introInProgress = false;
 
 class ContainerRow {
     htmlElement = null;
@@ -183,22 +184,23 @@ const updateBestScore = (score) => {
 };
 
 const startGame = () => {
-    if (playing) return;
+    if (playing || introInProgress) return;
 
     if (isCheating()) {
         alert("- ANTICHEAT -\nFerme ton gros mode développeur !");
         return;
     }
 
-    playing = true;
     pressSpace.style.display = "none";
+    introInProgress = true;
 
-    startPositionLeft = player.offsetLeft;
-    startPositionTop = player.offsetTop;
-
-    startSummoningContainers();
-    startOxygenDrain();
-    ensureMovementLoop();
+    animatePlayerIntro().then(() => {
+        introInProgress = false;
+        playing = true;
+        startSummoningContainers();
+        startOxygenDrain();
+        ensureMovementLoop();
+    });
 };
 
 const startSummoningContainers = () => {
@@ -224,6 +226,7 @@ const startOxygenDrain = () => {
 
 const endGame = (reason) => {
     playing = false;
+    introInProgress = false;
     clearInterval(spawner);
     clearInterval(oxygenInterval);
 
@@ -239,8 +242,7 @@ const endGame = (reason) => {
     }
     containerRows.length = 0;
 
-    player.style.left = startPositionLeft + "px";
-    player.style.top = startPositionTop + "px";
+    positionPlayerBelowWater();
 };
 
 const updateMainMessage = (score, reason) => {
@@ -264,6 +266,7 @@ const updateMainMessage = (score, reason) => {
 };
 
 const toggleMenu = () => {
+    if (!playing) return;
     playing = !playing;
 
     const menuContainer = document.getElementById("menu-container");
@@ -295,6 +298,50 @@ const goToLeaderboard = () => {
 
 const logOut = () => {
     window.location.href = "/logout";
+};
+
+const getOffscreenTop = () => {
+    const parentEl = player.offsetParent || water || document.body;
+    const parentHeight =
+        parentEl && parentEl !== document.body
+            ? parentEl.clientHeight
+            : window.innerHeight;
+    const playerHeight = player.getBoundingClientRect().height || 0;
+    return parentHeight + playerHeight + 60;
+};
+
+const positionPlayerBelowWater = () => {
+    player.style.transition = "none";
+    player.style.left = startPositionLeft + "px";
+    player.style.top = getOffscreenTop() + "px";
+    player.style.opacity = "0";
+    void player.offsetHeight;
+};
+
+const animatePlayerIntro = () => {
+    return new Promise((resolve) => {
+        positionPlayerBelowWater();
+
+        requestAnimationFrame(() => {
+            player.style.transition = "top 1.2s cubic-bezier(0.23, 1, 0.32, 1)";
+            // trigger layout before changing value
+            void player.offsetHeight;
+            player.style.opacity = "1";
+            player.style.top = startPositionTop + "px";
+
+            let resolved = false;
+            const cleanup = () => {
+                if (resolved) return;
+                resolved = true;
+                player.style.transition = "";
+                player.removeEventListener("transitionend", cleanup);
+                resolve();
+            };
+
+            player.addEventListener("transitionend", cleanup, { once: true });
+            setTimeout(cleanup, 1800); // safety in case transitionend doesn't fire
+        });
+    });
 };
 
 const ensureMovementLoop = () => {
@@ -382,3 +429,6 @@ document.addEventListener("keyup", (event) => {
     if (!movementKeys.has(normalizedKey)) return;
     pressedKeys.delete(normalizedKey);
 });
+
+// Hide player below water until first game starts
+positionPlayerBelowWater();
