@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Leaderboard</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='styles/leaderboard.css') }}"
+        />
+    </head>
+    <body>
+        <div id="water"></div>
+        <main class="leaderboard-page">
+            <section class="leaderboard-card">
+                <header>
+                    <div class="logo" aria-hidden="true">🐳</div>
+                    <div>
+                        <p class="eyebrow">Top joueurs</p>
+                        <h1>Leaderboard</h1>
+                    </div>
+                </header>
+
+                <div class="leaderboard-list" role="list">
+                    <article class="leaderboard-item top-1" role="listitem">
+                        <span class="rank">1</span>
+                        <div class="player">
+                            <p class="name">{{ scores[0].name }}</p>
+                            <p class="meta">
+                                Record : {{ scores[0].bestScore }}
+                            </p>
+                        </div>
+                        <span class="score">{{ scores[0].bestScore }}</span>
+                    </article>
+
+                    <article class="leaderboard-item top-2" role="listitem">
+                        <span class="rank">2</span>
+                        <div class="player">
+                            <p class="name">{{ scores[1].name }}</p>
+                            <p class="meta">
+                                Record : {{ scores[1].bestScore }}
+                            </p>
+                        </div>
+                        <span class="score">{{ scores[1].bestScore }}</span>
+                    </article>
+                    
+                    <article class="leaderboard-item top-3" role="listitem">
+                        <span class="rank">3</span>
+                        <div class="player">
+                            <p class="name">{{ scores[2].name }}</p>
+                            <p class="meta">
+                                Record : {{ scores[2].bestScore }}
+                            </p>
+                        </div>
+                        <span class="score">{{ scores[2].bestScore }}</span>
+                    </article>
+
+                    {% for score in scores[3:] %}
+                    <article class="leaderboard-item" role="listitem">
+                        <span class="rank">{{ loop.index + 3 }}</span>
+                        <div class="player">
+                            <p class="name">{{ score.name }}</p>
+                            <p class="meta">Record : {{ score.bestScore }}</p>
+                        </div>
+                        <span class="score">{{ score.bestScore }}</span>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                <a class="back-button" href="/game">
+                    <span class="back-icon" aria-hidden="true">&larr;</span>
+                    Retour
+                </a>
+            </section>
+        </main>
+    </body>
+</html>

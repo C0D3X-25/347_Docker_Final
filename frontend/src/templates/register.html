@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Inscription</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='styles/connection.css') }}"
+        />
+    </head>
+    <body>
+        <div id="water"></div>
+        <main class="login-page">
+            <div class="card">
+                <header class="card-header">
+                    <div class="logo" aria-hidden="true">🐳</div>
+                    <h1>Inscription</h1>
+                    <p class="subtitle">
+                        Créez votre compte pour commencer à jouer
+                    </p>
+                </header>
+
+                {% if error %}
+                <div
+                    class="error-message"
+                    id="register-error"
+                    role="alert"
+                    aria-live="polite"
+                >
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form
+                    class="login-form"
+                    action="/register"
+                    method="post"
+                    novalidate
+                >
+                    <label for="username">Nom d'utilisateur</label>
+                    <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        placeholder="username"
+                        required
+                    />
+
+                    <label for="password">Mot de passe</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                        minlength="6"
+                    />
+
+                    <button type="submit" class="btn-primary">
+                        S'inscrire
+                    </button>
+                </form>
+
+                <footer class="card-footer">
+                    <p>Déjà un compte ? <a href="/login">Se connecter</a></p>
+                </footer>
+            </div>
+        </main>
+    </body>
+</html>

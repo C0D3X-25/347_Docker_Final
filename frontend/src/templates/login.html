@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Connexion</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='styles/connection.css') }}"
+        />
+    </head>
+    <body>
+        <div id="water"></div>
+        <main class="login-page">
+            <div class="card">
+                <header class="card-header">
+                    <div class="logo" aria-hidden="true">🐳</div>
+                    <h1>Connexion</h1>
+                    <p class="subtitle">Connectez-vous pour accéder au jeu</p>
+                </header>
+
+                {% if error %}
+                <div
+                    class="error-message"
+                    id="login-error"
+                    role="alert"
+                    aria-live="polite"
+                >
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form
+                    class="login-form"
+                    action="/login"
+                    method="post"
+                    novalidate
+                >
+                    <label for="username">Nom d'utilisateur</label>
+                    <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        placeholder="username"
+                        required
+                    />
+
+                    <label for="password">Mot de passe</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                        minlength="6"
+                    />
+
+                    <div class="form-row">
+                        <label class="checkbox">
+                            <input type="checkbox" name="remember" /> Se
+                            souvenir de moi
+                        </label>
+                        <a class="forgot" href="/forgot"
+                            >Mot de passe oublié ?</a
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Se connecter
+                    </button>
+                </form>
+
+                <footer class="card-footer">
+                    <p>
+                        Pas encore de compte ?
+                        <a href="/register">Créer un compte</a>
+                    </p>
+                </footer>
+            </div>
+        </main>
+    </body>
+</html>
