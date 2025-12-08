@@ -5,6 +5,7 @@ const pressSpace = document.getElementById("press-space");
 const player = document.getElementById("player");
 const water = document.getElementById("water");
 const oxygenBar = document.getElementById("oxygen-bar");
+const menuContainer = document.getElementById("menu-container");
 
 const container = new Image();
 container.src = "/static/assets/container.png";
@@ -44,16 +45,22 @@ let spawner = null;
 let oxygenInterval = null;
 let movementFrame = null;
 let introInProgress = false;
+let menuWasPlaying = false;
 
 class ContainerRow {
     htmlElement = null;
-    moveDownInterval = null;
+    rafId = null;
+    lastFrame = null;
+    positionY = 0;
+    speed = 180; // pixels per second
     scored = false;
     emptySlot = null;
 
     constructor(element) {
         this.htmlElement = element;
         this.emptySlot = element.querySelector(".empty-slot");
+        this.positionY = -this.htmlElement.getBoundingClientRect().height;
+        this.htmlElement.style.transform = `translateY(${this.positionY}px)`;
         this.startMoveDown();
         containerRows.push(this);
     }
@@ -64,29 +71,40 @@ class ContainerRow {
     };
 
     startMoveDown() {
-        this.moveDownInterval = setInterval(() => {
-            if (!playing) return;
+        const step = (timestamp) => {
+            if (!this.htmlElement) return;
 
-            if (this.isOutOfScreen()) {
-                this.stopMoveDown();
-                this.destroy();
-            } else {
-                this.moveDown();
+            if (this.lastFrame === null) {
+                this.lastFrame = timestamp;
+            }
+
+            const delta = timestamp - this.lastFrame;
+            this.lastFrame = timestamp;
+
+            if (playing) {
+                this.positionY += (this.speed * delta) / 1000;
+                this.htmlElement.style.transform = `translateY(${this.positionY}px)`;
+
+                if (this.isOutOfScreen()) {
+                    this.destroy();
+                    return;
+                }
+
                 this.checkCollision();
             }
-        }, 25);
+
+            this.rafId = requestAnimationFrame(step);
+        };
+
+        this.rafId = requestAnimationFrame(step);
     }
 
     stopMoveDown() {
-        if (this.moveDownInterval) {
-            clearInterval(this.moveDownInterval);
-            this.moveDownInterval = null;
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+            this.lastFrame = null;
         }
-    }
-
-    moveDown() {
-        const top = this.htmlElement.getBoundingClientRect().top;
-        this.htmlElement.style.top = top + 5 + "px";
     }
 
     destroy() {
@@ -266,16 +284,22 @@ const updateMainMessage = (score, reason) => {
 };
 
 const toggleMenu = () => {
-    if (!playing) return;
-    playing = !playing;
+    if (introInProgress) return;
 
-    const menuContainer = document.getElementById("menu-container");
-    if (menuContainer.style.display === "flex") {
+    const isOpen = menuContainer.style.display === "flex";
+
+    if (isOpen) {
         menuContainer.style.display = "none";
+        if (menuWasPlaying) {
+            playing = true;
+            ensureMovementLoop();
+        }
+        menuWasPlaying = false;
     } else {
+        menuWasPlaying = playing;
+        playing = false;
         menuContainer.style.display = "flex";
     }
-    ensureMovementLoop();
 };
 
 const postScore = async (score) => {
