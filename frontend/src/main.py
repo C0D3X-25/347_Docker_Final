@@ -154,7 +154,6 @@ def leaderboard():
     if username and scores:
         place, score = get_place_and_score(username, scores)
 
-    print(username, place, score)
     return render_template(
         "leaderboard.html", scores=scores, username=username, place=place, score=score
     )
@@ -182,7 +181,9 @@ def logout_route():
     return redirect(url_for("login_get"))
 
 
-def get_place_and_score(username: str, scores: list[dict[str, Union[str, int]]]) -> tuple[Union[int, None], Union[int, None]]:
+def get_place_and_score(
+    username: str, scores: list[dict[str, Union[str, int]]]
+) -> tuple[Union[int, None], Union[int, None]]:
     place: int | None = None
     score: int | None = None
 
@@ -195,6 +196,7 @@ def get_place_and_score(username: str, scores: list[dict[str, Union[str, int]]])
             break
 
     return place, score
+
 
 def login(username: str, password: str) -> tuple[int, Union[dict[str, str], None]]:
     data: dict[str, str] | None = None
