@@ -435,6 +435,7 @@ const stepMovement = () => {
 };
 
 const isScreenPortrait = () => window.innerHeight > window.innerWidth;
+const isOnPhone = () => /Mobi|Android/i.test(navigator.userAgent);
 
 const toggleRotatePhone = (show) => {
     if (!rotatePhone) return;
@@ -495,6 +496,17 @@ if (boat) {
 
 if (isScreenPortrait()) {
     toggleRotatePhone(true);
+}
+
+const setUnsupportedMode = () => {
+    scoreDiv.remove();
+    recordDiv.remove();
+    pressSpace.innerHTML =
+        "Désolé, le jeu n'est pas encore disponible sur cette résolution.</br></br>Utilise un ordinateur pour jouer !";
+};
+
+if (isOnPhone()) {
+    setUnsupportedMode();
 }
 
 window.addEventListener("resize", () => {
