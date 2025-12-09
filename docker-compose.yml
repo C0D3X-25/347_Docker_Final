@@ -15,7 +15,7 @@ networks:
 
 services:
 
-  # Python frontend application (Flappy Bird game) - dev
+  # Python frontend application (Game) - dev
   frontend-dev:
     build:
       context: ./frontend
@@ -32,7 +32,7 @@ services:
     profiles:
       - dev
 
-  # Python frontend application (Flappy Bird game) - prod
+  # Python frontend application (Game) - prod
   frontend-prod:
     build:
       context: ./frontend
