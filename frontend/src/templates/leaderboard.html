@@ -2,8 +2,16 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Leaderboard</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Leaderboard | Floppy Whale</title>
+        <link
+            rel="shortcut icon"
+            href="{{ url_for('static', filename='assets/whale.png') }}"
+            type="image/x-icon"
+        />
         <link
             rel="stylesheet"
             href="{{ url_for('static', filename='styles/leaderboard.css') }}"
@@ -93,7 +101,7 @@
                 </div>
 
                 <div class="leaderboard-actions">
-                    <a class="back-button" href="/game">
+                    <a class="back-button" onclick="goBack()">
                         <span class="back-icon" aria-hidden="true">&larr;</span>
                         Retour
                     </a>
@@ -109,18 +117,95 @@
                     {% endif %}
                 </div>
             </section>
+
+            <img
+                id="island"
+                src="{{ url_for('static', filename='assets/island.svg') }}"
+                alt=""
+                aria-hidden="true"
+            />
+
+            <img
+                id="boat"
+                src="{{ url_for('static', filename='assets/boat.png') }}"
+                alt=""
+                aria-hidden="true"
+            />
         </main>
         <script>
             const leaderboardList = document.querySelector(".leaderboard-list");
             const scrollButton = document.querySelector(".scroll-to-player");
+            const boat = document.getElementById("boat");
 
-            function scrollToPlayer(
+            const BOAT_SPEED = 60; // px per second
+
+            let boatAnimationFrame = null;
+            let boatPosition = 0;
+            let lastBoatTimestamp = null;
+
+            const getBoatWidth = () => {
+                if (!boat) return 0;
+                return (
+                    boat.getBoundingClientRect().width ||
+                    boat.naturalWidth ||
+                    160
+                );
+            };
+
+            const resetBoatPosition = () => {
+                if (!boat) return;
+                boatPosition = -getBoatWidth();
+                boat.style.left = `${boatPosition}px`;
+            };
+
+            const animateBoat = (timestamp) => {
+                if (!boat) return;
+                if (lastBoatTimestamp === null) {
+                    lastBoatTimestamp = timestamp;
+                }
+
+                const delta = timestamp - lastBoatTimestamp;
+                lastBoatTimestamp = timestamp;
+
+                boatPosition += (BOAT_SPEED * delta) / 1000;
+                const travelSpan = window.innerWidth + getBoatWidth();
+
+                if (boatPosition > travelSpan) {
+                    resetBoatPosition();
+                } else {
+                    boat.style.left = `${boatPosition}px`;
+                }
+
+                boatAnimationFrame = requestAnimationFrame(animateBoat);
+            };
+
+            const startBoatAnimation = () => {
+                if (!boat || boatAnimationFrame) return;
+                resetBoatPosition();
+                boatAnimationFrame = requestAnimationFrame(animateBoat);
+            };
+
+            const scrollToPlayer = (
                 options = { behavior: "smooth", block: "center" }
-            ) {
+            ) => {
                 if (!leaderboardList) return;
                 const playerItem = leaderboardList.querySelector(".is-player");
                 if (playerItem) {
                     playerItem.scrollIntoView(options);
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "/game";
+            };
+
+            if (boat) {
+                if (boat.complete) {
+                    startBoatAnimation();
+                } else {
+                    boat.addEventListener("load", startBoatAnimation, {
+                        once: true,
+                    });
                 }
             }
 

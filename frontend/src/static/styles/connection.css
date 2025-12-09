@@ -11,20 +11,24 @@
     box-sizing: border-box;
 }
 
-html,
-body {
-    height: 100%;
+html {
+    width: 100%;
+    overflow-x: hidden;
 }
 
 body {
+    height: 100vh;
+    width: 100%;
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
     background: radial-gradient(circle at 25% 15%, #c8ecff 0%, #7fc3ff 45%, #4a82d8 100%);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 .leaderboard-link {
+    cursor: pointer;
     position: fixed;
     top: 24px;
     right: 24px;
@@ -71,6 +75,26 @@ body {
     width: 100vw;
     background: linear-gradient(180deg, #1f86d6 0%, #031018 70%);
     box-shadow: 0 -25px 60px rgba(3, 16, 24, 0.65);
+}
+
+#island {
+    width: 15vw;
+    height: auto;
+    position: fixed;
+    bottom: 65vh;
+    right: 6%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+#boat {
+    width: 12vw;
+    height: auto;
+    position: fixed;
+    bottom: 62vh;
+    left: -12vw;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .login-page {

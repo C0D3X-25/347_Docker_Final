@@ -6,17 +6,24 @@
     --surface-border: rgba(255, 255, 255, 0.1);
 }
 
+html {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;
+    width: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: radial-gradient(circle at 25% 15%, #c8ecff 0%, #7fc3ff 45%, #4a82d8 100%);
     color: #f3f7ff;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 #water {
-    z-index: -1;
+    z-index: 0;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -26,13 +33,35 @@ body {
     box-shadow: 0 -25px 60px rgba(3, 16, 24, 0.65);
 }
 
+#island {
+    width: 15vw;
+    height: auto;
+    position: fixed;
+    bottom: 65vh;
+    right: 6%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+#boat {
+    width: 12vw;
+    height: auto;
+    position: fixed;
+    bottom: 62vh;
+    left: -12vw;
+    z-index: -1;
+    pointer-events: none;
+}
+
 .leaderboard-page {
     max-height: 100vh;
-    padding: 48px 24px;
+    padding: 48px clamp(16px, 4vw, 24px);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 22px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .back-button {
@@ -47,7 +76,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 16px 40px rgba(0, 8, 20, 0.65);
     font-weight: 600;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .back-button:hover {
@@ -60,7 +88,7 @@ body {
 }
 
 .leaderboard-card {
-    width: min(640px, 92vw);
+    width: min(640px, 100%);
     background: var(--surface);
     border-radius: 28px;
     padding: 36px;
@@ -78,10 +106,18 @@ body {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .leaderboard-actions .back-button {
     margin-top: 0;
+}
+
+.leaderboard-actions .scroll-to-player,
+.leaderboard-actions .back-button {
+    max-width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
 }
 
 .leaderboard-header {
@@ -92,6 +128,18 @@ body {
 
 .leaderboard-title {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.leaderboard-title .eyebrow {
+    margin: 0;
+}
+
+.leaderboard-title h1 {
+    margin: 0;
 }
 
 .player-highlights {
@@ -101,6 +149,8 @@ body {
     text-align: right;
     min-width: 220px;
     justify-content: flex-end;
+    max-width: 100%;
+    flex-wrap: wrap;
 }
 
 .highlight {
@@ -135,19 +185,6 @@ body {
     font-size: 30px;
     color: #f8fbff;
     box-shadow: inset 0 0 25px rgba(36, 150, 237, 0.25);
-}
-
-.leaderboard-card h1 {
-    margin: 4px 0 0;
-    font-size: 26px;
-}
-
-.leaderboard-card .eyebrow {
-    margin: 0;
-    font-size: 13px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    text-transform: uppercase;
 }
 
 .leaderboard-list {
@@ -281,8 +318,14 @@ body {
 }
 
 @media (max-width: 520px) {
+    .leaderboard-page {
+        padding: 32px 16px;
+    }
+
     .leaderboard-card {
         padding: 28px 22px;
+        max-height: calc(100vh - 48px);
+        overflow: hidden;
     }
 
     .leaderboard-header {
@@ -296,10 +339,12 @@ body {
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
+        max-width: 100%;
     }
 
     .highlight {
         width: 100%;
+        box-sizing: border-box;
     }
 
     .leaderboard-actions {
@@ -311,10 +356,16 @@ body {
     .leaderboard-actions .back-button {
         width: 100%;
         justify-content: center;
+        max-width: 100%;
     }
 
     .leaderboard-item {
         grid-template-columns: 36px 1fr auto;
         padding: 12px;
+    }
+
+    .leaderboard-list {
+        flex: 1 1 auto;
+        min-height: 0;
     }
 }

@@ -4,8 +4,10 @@ const recordDiv = document.getElementById("record");
 const pressSpace = document.getElementById("press-space");
 const player = document.getElementById("player");
 const water = document.getElementById("water");
+const boat = document.getElementById("boat");
 const oxygenBar = document.getElementById("oxygen-bar");
 const menuContainer = document.getElementById("menu-container");
+const rotatePhone = document.getElementById("rotate-phone");
 
 const container = new Image();
 container.src = "/static/assets/container.png";
@@ -22,6 +24,7 @@ const deadByCollisionMsgs = [
 ];
 
 const playerSpeed = 4;
+const BOAT_SPEED = 60; // px per second
 const containerRows = [];
 const maxOxygen = 100;
 const movementKeys = new Set([
@@ -46,6 +49,9 @@ let oxygenInterval = null;
 let movementFrame = null;
 let introInProgress = false;
 let menuWasPlaying = false;
+let boatAnimationFrame = null;
+let boatPosition = 0;
+let lastBoatTimestamp = null;
 
 class ContainerRow {
     htmlElement = null;
@@ -427,6 +433,77 @@ const stepMovement = () => {
 
     movementFrame = requestAnimationFrame(stepMovement);
 };
+
+const isScreenPortrait = () => window.innerHeight > window.innerWidth;
+
+const toggleRotatePhone = (show) => {
+    if (!rotatePhone) return;
+    if (show) {
+        pressSpace.style.display = "none";
+        rotatePhone.style.display = "block";
+    } else {
+        pressSpace.style.display = "block";
+        rotatePhone.style.display = "none";
+    }
+};
+
+const getBoatWidth = () => {
+    if (!boat) return 0;
+    return boat.getBoundingClientRect().width || boat.naturalWidth || 160;
+};
+
+const resetBoatPosition = () => {
+    if (!boat) return;
+    boatPosition = -getBoatWidth();
+    boat.style.left = `${boatPosition}px`;
+};
+
+const animateBoat = (timestamp) => {
+    if (!boat) return;
+    if (lastBoatTimestamp === null) {
+        lastBoatTimestamp = timestamp;
+    }
+
+    const delta = timestamp - lastBoatTimestamp;
+    lastBoatTimestamp = timestamp;
+
+    boatPosition += (BOAT_SPEED * delta) / 1000;
+    const travelSpan = window.innerWidth + getBoatWidth();
+
+    if (boatPosition > travelSpan) {
+        resetBoatPosition();
+    } else {
+        boat.style.left = `${boatPosition}px`;
+    }
+
+    boatAnimationFrame = requestAnimationFrame(animateBoat);
+};
+
+const startBoatAnimation = () => {
+    if (!boat || boatAnimationFrame) return;
+    resetBoatPosition();
+    boatAnimationFrame = requestAnimationFrame(animateBoat);
+};
+
+if (boat) {
+    if (boat.complete) {
+        startBoatAnimation();
+    } else {
+        boat.addEventListener("load", startBoatAnimation, { once: true });
+    }
+}
+
+if (isScreenPortrait()) {
+    toggleRotatePhone(true);
+}
+
+window.addEventListener("resize", () => {
+    if (isScreenPortrait()) {
+        toggleRotatePhone(true);
+    } else {
+        toggleRotatePhone(false);
+    }
+});
 
 document.addEventListener("keydown", (event) => {
     if (event.key === " ") {

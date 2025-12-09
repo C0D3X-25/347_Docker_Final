@@ -15,6 +15,25 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+#rotate-phone {
+    z-index: 300;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+}
+
+#rotate-phone img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: auto;
+    opacity: 0.9;
+}
+
 #water {
     position: fixed;
     bottom: 0;
@@ -25,6 +44,27 @@ body {
     align-items: center;
     background: linear-gradient(180deg, #1f86d6 0%, #031018 70%);
     box-shadow: 0 -20px 60px rgba(3, 16, 24, 0.6);
+    z-index: 0;
+}
+
+#island {
+    width: 15vw;
+    height: auto;
+    position: fixed;
+    bottom: 65vh;
+    right: 6%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+#boat {
+    width: 12vw;
+    height: auto;
+    position: fixed;
+    bottom: 62vh;
+    left: -12vw;
+    z-index: -1;
+    pointer-events: none;
 }
 
 #press-space {

@@ -2,8 +2,16 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Connexion</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Connexion | Floppy Whale</title>
+        <link
+            rel="shortcut icon"
+            href="{{ url_for('static', filename='assets/whale.png') }}"
+            type="image/x-icon"
+        />
         <link
             rel="stylesheet"
             href="{{ url_for('static', filename='styles/connection.css') }}"
@@ -12,7 +20,7 @@
     <body>
         <a
             class="leaderboard-link"
-            href="/leaderboard"
+            onclick="goToLeaderboard()"
             aria-label="Voir le leaderboard"
         >
             <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
@@ -102,6 +110,85 @@
                     </p>
                 </footer>
             </div>
+
+            <img
+                id="island"
+                src="{{ url_for('static', filename='assets/island.svg') }}"
+                alt=""
+                aria-hidden="true"
+            />
+
+            <img
+                id="boat"
+                src="{{ url_for('static', filename='assets/boat.png') }}"
+                alt=""
+                aria-hidden="true"
+            />
         </main>
+        <script>
+            const boat = document.getElementById("boat");
+
+            const BOAT_SPEED = 60; // px per second
+
+            let boatAnimationFrame = null;
+            let boatPosition = 0;
+            let lastBoatTimestamp = null;
+
+            const goToLeaderboard = () => {
+                window.location.href = "/leaderboard";
+            };
+
+            const getBoatWidth = () => {
+                if (!boat) return 0;
+                return (
+                    boat.getBoundingClientRect().width ||
+                    boat.naturalWidth ||
+                    160
+                );
+            };
+
+            const resetBoatPosition = () => {
+                if (!boat) return;
+                boatPosition = -getBoatWidth();
+                boat.style.left = `${boatPosition}px`;
+            };
+
+            const animateBoat = (timestamp) => {
+                if (!boat) return;
+                if (lastBoatTimestamp === null) {
+                    lastBoatTimestamp = timestamp;
+                }
+
+                const delta = timestamp - lastBoatTimestamp;
+                lastBoatTimestamp = timestamp;
+
+                boatPosition += (BOAT_SPEED * delta) / 1000;
+                const travelSpan = window.innerWidth + getBoatWidth();
+
+                if (boatPosition > travelSpan) {
+                    resetBoatPosition();
+                } else {
+                    boat.style.left = `${boatPosition}px`;
+                }
+
+                boatAnimationFrame = requestAnimationFrame(animateBoat);
+            };
+
+            const startBoatAnimation = () => {
+                if (!boat || boatAnimationFrame) return;
+                resetBoatPosition();
+                boatAnimationFrame = requestAnimationFrame(animateBoat);
+            };
+
+            if (boat) {
+                if (boat.complete) {
+                    startBoatAnimation();
+                } else {
+                    boat.addEventListener("load", startBoatAnimation, {
+                        once: true,
+                    });
+                }
+            }
+        </script>
     </body>
 </html>
