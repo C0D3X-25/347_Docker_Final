@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <div id="menu-icon-container" class="info-box" onclick="toggleMenu()">
+        <div id="menu-icon-container" class="info-box">
             <img
                 style="width: 60px"
                 src="{{ url_for('static', filename='assets/burger-menu.svg') }}"
@@ -65,19 +65,11 @@
 
         <div id="menu-container">
             <div id="menu-overlay">
-                <button class="btn-primary" id="resume" onclick="toggleMenu()">
-                    Resume
-                </button>
-                <button
-                    class="btn-primary"
-                    id="leaderboard"
-                    onclick="goToLeaderboard()"
-                >
+                <button class="btn-primary" id="resume">Resume</button>
+                <button class="btn-primary" id="leaderboard">
                     Leaderboard
                 </button>
-                <button class="btn-primary" id="logout" onclick="logOut()">
-                    Logout
-                </button>
+                <button class="btn-primary" id="logout">Logout</button>
             </div>
         </div>
 

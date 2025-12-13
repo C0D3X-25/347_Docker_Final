@@ -101,17 +101,13 @@
                 </div>
 
                 <div class="leaderboard-actions">
-                    <a class="back-button" onclick="goBack()">
+                    <a class="back-button">
                         <span class="back-icon" aria-hidden="true">&larr;</span>
                         Retour
                     </a>
 
                     {% if username and place %}
-                    <button
-                        class="scroll-to-player"
-                        type="button"
-                        onclick="scrollToPlayer()"
-                    >
+                    <button class="scroll-to-player" type="button">
                         Aller à ma position
                     </button>
                     {% endif %}
@@ -133,83 +129,108 @@
             />
         </main>
         <script>
-            const leaderboardList = document.querySelector(".leaderboard-list");
-            const scrollButton = document.querySelector(".scroll-to-player");
-            const boat = document.getElementById("boat");
+            (() => {
+                const leaderboardList =
+                    document.querySelector(".leaderboard-list");
+                const scrollButton =
+                    document.querySelector(".scroll-to-player");
+                const boat = document.getElementById("boat");
+                const backButton = document.querySelector(".back-button");
+                const scrollToPlayerButton =
+                    document.querySelector(".scroll-to-player");
 
-            const BOAT_SPEED = 60; // px per second
+                const BOAT_SPEED = 60; // px per second
 
-            let boatAnimationFrame = null;
-            let boatPosition = 0;
-            let lastBoatTimestamp = null;
+                let boatAnimationFrame = null;
+                let boatPosition = 0;
+                let lastBoatTimestamp = null;
 
-            const getBoatWidth = () => {
-                if (!boat) return 0;
-                return (
-                    boat.getBoundingClientRect().width ||
-                    boat.naturalWidth ||
-                    160
-                );
-            };
+                const getBoatWidth = () => {
+                    if (!boat) return 0;
+                    return (
+                        boat.getBoundingClientRect().width ||
+                        boat.naturalWidth ||
+                        160
+                    );
+                };
 
-            const resetBoatPosition = () => {
-                if (!boat) return;
-                boatPosition = -getBoatWidth();
-                boat.style.left = `${boatPosition}px`;
-            };
-
-            const animateBoat = (timestamp) => {
-                if (!boat) return;
-                if (lastBoatTimestamp === null) {
-                    lastBoatTimestamp = timestamp;
-                }
-
-                const delta = timestamp - lastBoatTimestamp;
-                lastBoatTimestamp = timestamp;
-
-                boatPosition += (BOAT_SPEED * delta) / 1000;
-                const travelSpan = window.innerWidth + getBoatWidth();
-
-                if (boatPosition > travelSpan) {
-                    resetBoatPosition();
-                } else {
+                const resetBoatPosition = () => {
+                    if (!boat) return;
+                    boatPosition = -getBoatWidth();
                     boat.style.left = `${boatPosition}px`;
+                };
+
+                const animateBoat = (timestamp) => {
+                    if (!boat) return;
+                    if (lastBoatTimestamp === null) {
+                        lastBoatTimestamp = timestamp;
+                    }
+
+                    const delta = timestamp - lastBoatTimestamp;
+                    lastBoatTimestamp = timestamp;
+
+                    boatPosition += (BOAT_SPEED * delta) / 1000;
+                    const travelSpan = window.innerWidth + getBoatWidth();
+
+                    if (boatPosition > travelSpan) {
+                        resetBoatPosition();
+                    } else {
+                        boat.style.left = `${boatPosition}px`;
+                    }
+
+                    boatAnimationFrame = requestAnimationFrame(animateBoat);
+                };
+
+                const startBoatAnimation = () => {
+                    if (!boat || boatAnimationFrame) return;
+                    resetBoatPosition();
+                    boatAnimationFrame = requestAnimationFrame(animateBoat);
+                };
+
+                const scrollToPlayer = () => {
+                    if (!leaderboardList) return;
+                    const playerItem =
+                        leaderboardList.querySelector(".is-player");
+
+                    if (playerItem) {
+                        const isFirst = playerItem.classList.contains("top-1");
+
+                        if (isFirst) {
+                            leaderboardList.scrollTo({
+                                top: 0,
+                                left: 0,
+                                behavior: "smooth",
+                            });
+                        } else {
+                            playerItem.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                            });
+                        }
+                    }
+                };
+
+                const goBack = () => {
+                    window.location.href = "/game";
+                };
+
+                if (boat) {
+                    if (boat.complete) {
+                        startBoatAnimation();
+                    } else {
+                        boat.addEventListener("load", startBoatAnimation, {
+                            once: true,
+                        });
+                    }
                 }
 
-                boatAnimationFrame = requestAnimationFrame(animateBoat);
-            };
+                backButton.addEventListener("click", goBack);
+                scrollToPlayerButton.addEventListener("click", () => {
+                    scrollToPlayer();
+                });
 
-            const startBoatAnimation = () => {
-                if (!boat || boatAnimationFrame) return;
-                resetBoatPosition();
-                boatAnimationFrame = requestAnimationFrame(animateBoat);
-            };
-
-            const scrollToPlayer = (
-                options = { behavior: "smooth", block: "center" }
-            ) => {
-                if (!leaderboardList) return;
-                const playerItem = leaderboardList.querySelector(".is-player");
-                if (playerItem) {
-                    playerItem.scrollIntoView(options);
-                }
-            };
-
-            const goBack = () => {
-                window.location.href = "/game";
-            };
-
-            if (boat) {
-                if (boat.complete) {
-                    startBoatAnimation();
-                } else {
-                    boat.addEventListener("load", startBoatAnimation, {
-                        once: true,
-                    });
-                }
-            }
-
-            scrollToPlayer({ behavior: "auto", block: "center" });
+                scrollToPlayer({ behavior: "auto", block: "center" });
+            })();
         </script>
     </body>
 </html>

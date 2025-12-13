@@ -18,11 +18,7 @@
         />
     </head>
     <body>
-        <a
-            class="leaderboard-link"
-            onclick="goToLeaderboard()"
-            aria-label="Voir le leaderboard"
-        >
+        <a class="leaderboard-link" aria-label="Voir le leaderboard">
             <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
                 <path
                     d="M15 21H9V12.6C9 12.2686 9.26863 12 9.6 12H14.4C14.7314 12 15 12.2686 15 12.6V21Z"
@@ -126,69 +122,74 @@
             />
         </main>
         <script>
-            const boat = document.getElementById("boat");
+            (() => {
+                const boat = document.getElementById("boat");
+                const leaderboard = document.querySelector(".leaderboard-link");
 
-            const BOAT_SPEED = 60; // px per second
+                const BOAT_SPEED = 60; // px per second
 
-            let boatAnimationFrame = null;
-            let boatPosition = 0;
-            let lastBoatTimestamp = null;
+                let boatAnimationFrame = null;
+                let boatPosition = 0;
+                let lastBoatTimestamp = null;
 
-            const goToLeaderboard = () => {
-                window.location.href = "/leaderboard";
-            };
+                const goToLeaderboard = () => {
+                    window.location.href = "/leaderboard";
+                };
 
-            const getBoatWidth = () => {
-                if (!boat) return 0;
-                return (
-                    boat.getBoundingClientRect().width ||
-                    boat.naturalWidth ||
-                    160
-                );
-            };
+                const getBoatWidth = () => {
+                    if (!boat) return 0;
+                    return (
+                        boat.getBoundingClientRect().width ||
+                        boat.naturalWidth ||
+                        160
+                    );
+                };
 
-            const resetBoatPosition = () => {
-                if (!boat) return;
-                boatPosition = -getBoatWidth();
-                boat.style.left = `${boatPosition}px`;
-            };
-
-            const animateBoat = (timestamp) => {
-                if (!boat) return;
-                if (lastBoatTimestamp === null) {
-                    lastBoatTimestamp = timestamp;
-                }
-
-                const delta = timestamp - lastBoatTimestamp;
-                lastBoatTimestamp = timestamp;
-
-                boatPosition += (BOAT_SPEED * delta) / 1000;
-                const travelSpan = window.innerWidth + getBoatWidth();
-
-                if (boatPosition > travelSpan) {
-                    resetBoatPosition();
-                } else {
+                const resetBoatPosition = () => {
+                    if (!boat) return;
+                    boatPosition = -getBoatWidth();
                     boat.style.left = `${boatPosition}px`;
+                };
+
+                const animateBoat = (timestamp) => {
+                    if (!boat) return;
+                    if (lastBoatTimestamp === null) {
+                        lastBoatTimestamp = timestamp;
+                    }
+
+                    const delta = timestamp - lastBoatTimestamp;
+                    lastBoatTimestamp = timestamp;
+
+                    boatPosition += (BOAT_SPEED * delta) / 1000;
+                    const travelSpan = window.innerWidth + getBoatWidth();
+
+                    if (boatPosition > travelSpan) {
+                        resetBoatPosition();
+                    } else {
+                        boat.style.left = `${boatPosition}px`;
+                    }
+
+                    boatAnimationFrame = requestAnimationFrame(animateBoat);
+                };
+
+                const startBoatAnimation = () => {
+                    if (!boat || boatAnimationFrame) return;
+                    resetBoatPosition();
+                    boatAnimationFrame = requestAnimationFrame(animateBoat);
+                };
+
+                if (boat) {
+                    if (boat.complete) {
+                        startBoatAnimation();
+                    } else {
+                        boat.addEventListener("load", startBoatAnimation, {
+                            once: true,
+                        });
+                    }
                 }
 
-                boatAnimationFrame = requestAnimationFrame(animateBoat);
-            };
-
-            const startBoatAnimation = () => {
-                if (!boat || boatAnimationFrame) return;
-                resetBoatPosition();
-                boatAnimationFrame = requestAnimationFrame(animateBoat);
-            };
-
-            if (boat) {
-                if (boat.complete) {
-                    startBoatAnimation();
-                } else {
-                    boat.addEventListener("load", startBoatAnimation, {
-                        once: true,
-                    });
-                }
-            }
+                leaderboard.addEventListener("click", goToLeaderboard);
+            })();
         </script>
     </body>
 </html>
