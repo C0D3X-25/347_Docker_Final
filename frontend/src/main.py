@@ -1,11 +1,13 @@
 from datetime import timedelta
 from functools import wraps
+import os
 from flask import Flask, render_template, redirect, url_for, request, session
 import requests
 from config import API_BASE_URL
 from typing import Any, Union
 
-IS_DEV = "prod" not in API_BASE_URL
+# Check if running in debug mode via environment variable
+DEBUG_MODE = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
 
 app = Flask(__name__)
 app.secret_key = "1414e499f8eb806d6be668779f05ca31c41d4ca6298ffeb7d29cc993a32756ff"
@@ -288,5 +290,6 @@ def logout() -> None:
 
 if __name__ == "__main__":
     print(f"Starting frontend with backend at {API_BASE_URL}")
-    port = 5000 if IS_DEV else 5001
-    app.run(host="0.0.0.0", debug=IS_DEV, port=port)
+    print(f"Debug mode: {DEBUG_MODE}")
+    # Always use port 5000 - port mapping is handled by Docker
+    app.run(host="0.0.0.0", debug=DEBUG_MODE, port=5000)

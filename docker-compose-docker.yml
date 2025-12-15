@@ -1,0 +1,132 @@
+# Docker Compose configuration for the Flappy Bird clone application.
+# Uses pre-built images from Docker Hub instead of building from Dockerfiles.
+# Defines frontend (Python), backend (C# API), and MySQL databases (dev/prod).
+
+name: floppy-whale-app
+
+# Named volumes for persistent MySQL data
+volumes:
+  mysql-prod-data:
+  mysql-dev-data:
+
+# Shared network for inter-container communication
+networks:
+  app-net:
+    driver: bridge
+
+services:
+
+  # Python frontend application (Game) - dev
+  frontend-dev:
+    image: codex25/frontend:dev
+    ports:
+      - "5001:5000"
+    environment:
+      - BACKEND_URL=http://backend-dev:8080
+    depends_on:
+      - backend-dev
+    networks:
+      - app-net
+    profiles:
+      - dev
+
+  # Python frontend application (Game) - prod
+  frontend-prod:
+    image: codex25/frontend:prod
+    ports:
+      - "5000:5000"
+    environment:
+      - BACKEND_URL=http://backend-prod:8080
+    depends_on:
+      - backend-prod
+    networks:
+      - app-net
+    profiles:
+      - prod
+
+  # C# ASP.NET Core backend API for user registration and login (dev)
+  backend-dev:
+    image: codex25/backend:dev
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - DB_HOST=mysql-dev
+      - DB_PORT=3306
+      - DB_NAME=db_347
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+    depends_on:
+      mysql-dev:
+        condition: service_healthy
+    networks:
+      - app-net
+    profiles:
+      - dev
+
+  # C# ASP.NET Core backend API for user registration and login (prod)
+  backend-prod:
+    image: codex25/backend:prod
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - DB_HOST=mysql-prod
+      - DB_PORT=3306
+      - DB_NAME=db_347
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+    depends_on:
+      mysql-prod:
+        condition: service_healthy
+    networks:
+      - app-net
+    profiles:
+      - prod
+
+  # MySQL database for production environment
+  mysql-prod:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=db_347
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-prod-data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    profiles:
+      - prod
+
+  # MySQL database for development environment (includes sample data)
+  mysql-dev:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=db_347
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-dev-data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+      - ./backend/dev-seed.sql:/docker-entrypoint-initdb.d/10-dev-seed.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    profiles:
+      - dev
