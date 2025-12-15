@@ -8,20 +8,6 @@ A Flappy Bird clone using Python for the game, C# ASP.NET Core for the API, and 
 
 ---
 
-## Project Structure
-
-```
-347_Docker_Final/
-??? frontend/                 # Python Flask game
-?   ??? Dockerfile
-??? backend/                  # C# ASP.NET Core API
-?   ??? Dockerfile
-?   ??? init.sql             # Database schema
-?   ??? dev-seed.sql         # Sample data (dev only)
-??? docker-compose-git.yml    # Build from source (Dockerfiles)
-??? docker-compose-docker.yml # Pull from Docker Hub
-```
-
 ### Architecture
 
 | Service | Technology | Dev Port | Prod Port |
