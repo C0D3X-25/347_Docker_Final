@@ -56,7 +56,7 @@ docker compose -f docker-compose-git.yml --profile dev up --build
 
 ## Option 2: Run from Docker Hub (Pre-built Images)
 
-Use pre-built images from Docker Hub — no build required.
+Use pre-built images from Docker Hub - no build required.
 
 ### Pull Images
 
