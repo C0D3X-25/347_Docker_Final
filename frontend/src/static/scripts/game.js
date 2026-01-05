@@ -28,7 +28,7 @@
         "Améliore ton doigté !",
     ];
 
-    const playerSpeed = 3;
+    const playerSpeed = 5;
     const BOAT_SPEED = 60; // px per second
     const containerRows = [];
     const maxOxygen = 100;
